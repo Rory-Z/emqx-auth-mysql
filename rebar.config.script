@@ -38,7 +38,7 @@ FIND_TAGS = fun(TAGS) ->
 
 TAGS = string:tokens(os:cmd("git tag -l \"v*\" --points-at $(git show $(git describe --abbrev=0 --tags )| grep commit | awk '{print $2}')"), "\n"),
 
-LATEST_TAG = lists:last(FIND_TAGS(TAGS))
+LATEST_TAG = lists:last(FIND_TAGS(TAGS)),
 
 io:format("LATEST: ======================~p~n",[LATEST_TAG]),
 io:format("TGAS: ======================~p~n",[FIND_TAGS(TAGS)]),
