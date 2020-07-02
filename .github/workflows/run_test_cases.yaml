@@ -13,7 +13,7 @@ jobs:
               - mysql:8
 
         steps:
-            - uses: actions/checkout@v1
+            - uses: actions/checkout@v2
             - name: find tag
               run: git describe --tags `git rev-list --tags --max-count=1`
             - name: install docker-compose
