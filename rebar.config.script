@@ -8,6 +8,41 @@ CONFIG1 = case os:getenv("TRAVIS") of
                   CONFIG
           end,
  
+SORT_TAG  = fun (F, [C1|R1], [C2|R2]) when is_integer(C1), is_integer(C2) -> case C1 < C2 of
+                                                                              true -> true;
+                                                                              false -> F(F, R1, R2)
+                                                                          end;
+                (F, [C1|R1], [C2|R2]) when is_integer(C1), is_list(C2) -> F(F, R1, R2);
+                (_, [C1|R1], [C2|R2]) when is_list(C1), is_integer(C2) -> true;
+                (F, [C1|R1], [C2|R2]) when is_list(C1), is_list(C2) -> case C1 < C2 of
+                                                                          true -> true;
+                                                                          false -> F(F, R1, R2)
+                                                                        end;
+                (_, _, _) -> false
+            end,
+
+SORT_TAGS = fun(TAG1, TAG2) ->
+              C = fun(L) -> [case catch list_to_integer(E) of
+                              I when is_integer(I) -> I;
+                              _ -> E
+                            end|| E <- L]
+                  end,
+              T1 = C(re:split(string:sub_string(TAG1, 2), "[.-]", [{return, list}])),
+              T2 = C(re:split(string:sub_string(TAG2, 2), "[.-]", [{return, list}])),
+              SORT_TAG(SORT_TAG, T1, T2)
+            end,
+
+FIND_TAGS = fun(TAGS) ->
+              lists:sort(SORT_TAGS, TAGS)
+            end,
+
+TAGS = string:tokens(os:cmd("git tag -l \"v*\" --points-at $(git show $(git describe --abbrev=0 --tags )| grep commit | awk '{print $2}')"), "\n"),
+
+LATEST_TAG = lists:last(FIND_TAGS(TAGS))
+
+io:format("LATEST: ======================~p~n",[LATEST_TAG]),
+io:format("TGAS: ======================~p~n",[FIND_TAGS(TAGS)]),
+
 CUR_BRANCH = os:cmd("git branch | grep -e '^*' | cut -d' ' -f 2") -- "\n",
 
 MATCH_BRANCH = fun (BranchName) when BranchName =:= "master";
